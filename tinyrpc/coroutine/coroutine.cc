@@ -126,7 +126,7 @@ bool Coroutine::setCallBack(std::function<void()> cb) {
   // first set 0 to stack
   // memset(&top, 0, m_stack_size);
 
-  top = reinterpret_cast<char*>((reinterpret_cast<unsigned long>(top)) & -16LL);
+  top = reinterpret_cast<char*>((reinterpret_cast<unsigned long>(top)) & -16LL); // What?
 
   memset(&m_coctx, 0, sizeof(m_coctx));
 
