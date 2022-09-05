@@ -1,13 +1,13 @@
 #include <google/protobuf/service.h>
 #include <iostream>
-#include "tcp_server.h"
-#include "net_address.h"
-#include "tinypb_rpc_dispatcher.h"
-#include "tinypb_rpc_channel.h"
-#include "tinypb_rpc_closure.h"
-#include "tinypb_rpc_controller.h"
-#include "log.h"
-#include "coroutine_pool.h"
+#include "tinyrpc/net/tcp/tcp_server.h"
+#include "tinyrpc/net/net_address.h"
+#include "tinyrpc/net/tinypb/tinypb_rpc_dispatcher.h"
+#include "tinyrpc/net/tinypb/tinypb_rpc_channel.h"
+#include "tinyrpc/net/tinypb/tinypb_rpc_closure.h"
+#include "tinyrpc/net/tinypb/tinypb_rpc_controller.h"
+#include "tinyrpc/comm/log.h"
+#include "tinyrpc/coroutine/coroutine_pool.h"
 #include "tinypb.pb.h"
 #include "tinyrpc/comm/start.h"
 

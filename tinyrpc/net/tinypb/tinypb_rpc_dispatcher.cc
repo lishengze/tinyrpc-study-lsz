@@ -5,7 +5,7 @@
 #include "../abstract_dispatcher.h"
 #include "../../comm/error_code.h"
 #include "tinypb_data.h"
-#include "tinypb_rpc_dispatcher.h"
+#include "tinyrpc/net/tinypb/tinypb_rpc_dispatcher.h"
 #include "tinypb_rpc_controller.h"
 #include "tinypb_rpc_closure.h"
 #include "tinypb_codec.h"

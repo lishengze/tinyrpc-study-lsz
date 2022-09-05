@@ -14,6 +14,7 @@ PATH_NET = $(PATH_TINYRPC)/net
 PATH_HTTP = $(PATH_TINYRPC)/net/http
 PATH_TCP = $(PATH_TINYRPC)/net/tcp
 PATH_TINYPB = $(PATH_TINYRPC)/net/tinypb
+PATH_TINYXML = $(PATH_TINYRPC)/tinyxml
 
 PATH_TESTCASES = testcases
 
@@ -42,9 +43,15 @@ CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable
 # CXXFLAGS += -g -O0 -std=c++11 -Wall -Wno-deprecated -Wno-unused-but-set-variable -D DECLARE_MYSQL_PLUGIN
 CXXFLAGS += -I./ -I$(PATH_TINYRPC)	-I$(PATH_COMM) -I$(PATH_COROUTINE) -I$(PATH_NET) -I$(PATH_HTTP) -I$(PATH_TCP) -I$(PATH_TINYPB)
 
-LIBS += /usr/lib/libprotobuf.a	/usr/lib/libtinyxml.a
+# LIBS += /usr/lib/libprotobuf.a	/usr/lib/libtinyxml.a
 
-MYSQL_LIB = /usr/lib/libmysqlclient.a
+# MYSQL_LIB = /usr/lib/libmysqlclient.a
+
+
+LIBS += /usr/lib/libprotobuf.so
+
+MYSQL_LIB = /usr/lib/libmysqlclient.so
+
 
 PLUGIN_LIB =
 # PLUGIN_LIB = $(MYSQL_LIB)
@@ -55,23 +62,24 @@ NET_OBJ := $(patsubst $(PATH_NET)/%.cc, $(PATH_NET)/%.o, $(wildcard $(PATH_NET)/
 HTTP_OBJ := $(patsubst $(PATH_HTTP)/%.cc, $(PATH_HTTP)/%.o, $(wildcard $(PATH_HTTP)/*.cc))
 TCP_OBJ := $(patsubst $(PATH_TCP)/%.cc, $(PATH_TCP)/%.o, $(wildcard $(PATH_TCP)/*.cc))
 TINYPB_OBJ := $(patsubst $(PATH_TINYPB)/%.cc, $(PATH_TINYPB)/%.o, $(wildcard $(PATH_TINYPB)/*.cc))
+TINYXML_OBJ := $(patsubst $(PATH_TINYXML)/%.cc, $(PATH_TINYXML)/%.o, $(wildcard $(PATH_TINYXML)/*.cc))
 
 COR_CTX_SWAP := coctx_swap.o
 
-ALL_TESTS : $(PATH_BIN)/test_rpc_server1 $(PATH_BIN)/test_rpc_server2 $(PATH_BIN)/test_http_server\
+# ALL_TESTS : $(PATH_BIN)/test_rpc_server1 $(PATH_BIN)/test_rpc_server2 $(PATH_BIN)/test_http_server\
 
-TEST_CASE_OUT := $(PATH_BIN)/test_rpc_server1 $(PATH_BIN)/test_rpc_server2 $(PATH_BIN)/test_http_server\
+# TEST_CASE_OUT := $(PATH_BIN)/test_rpc_server1 $(PATH_BIN)/test_rpc_server2 $(PATH_BIN)/test_http_server\
 
 LIB_OUT := $(PATH_LIB)/libtinyrpc.a
 
-$(PATH_BIN)/test_rpc_server1: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server1.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
+# $(PATH_BIN)/test_rpc_server1: $(LIB_OUT)
+# 	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server1.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
 
-$(PATH_BIN)/test_rpc_server2: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server2.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
+# $(PATH_BIN)/test_rpc_server2: $(LIB_OUT)
+# 	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_rpc_server2.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
 
-$(PATH_BIN)/test_http_server: $(LIB_OUT)
-	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_http_server.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
+# $(PATH_BIN)/test_http_server: $(LIB_OUT)
+# 	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_http_server.cc $(PATH_TESTCASES)/tinypb.pb.cc -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread $(PLUGIN_LIB)
 
 $(PATH_LIB)/libtinyrpc.a : $(COMM_OBJ) $(COROUTINE_OBJ) $(PATH_COROUTINE)/coctx_swap.o $(NET_OBJ) $(HTTP_OBJ) $(TCP_OBJ) $(TINYPB_OBJ)
 	@ar crsvT $@ $^
@@ -95,6 +103,9 @@ $(PATH_TCP)/%.o : $(PATH_TCP)/%.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(PATH_TINYPB)/%.o : $(PATH_TINYPB)/%.cc
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(PATH_TINYXML)/%.o : $(PATH_TINYXML)/%.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 

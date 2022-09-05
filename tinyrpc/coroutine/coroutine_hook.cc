@@ -3,6 +3,21 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/syscall.h>
+#include <sys/un.h>
+
+#include <dlfcn.h>
+#include <poll.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include <netinet/in.h>
+#include <errno.h>
+#include <time.h>
+
 #include "tinyrpc/coroutine/coroutine_hook.h"
 #include "tinyrpc/coroutine/coroutine.h"
 #include "tinyrpc/net/fd_event.h"
