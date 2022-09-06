@@ -10,6 +10,8 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <signal.h>
+#include <string>
+#include <vector>
 
 #ifdef DECLARE_MYSQL_PLUGIN 
 #include <mysql/mysql.h>
@@ -60,13 +62,44 @@ void setLogLevel(LogLevel level) {
   // g_log_level = level;
 }
 
+inline std::vector<std::string>
+StringSplit(const std::string& src, char split, size_t split_count = 0) {
+    std::vector<std::string> tar;
+    auto idx_s = src.begin(), idx_e = src.begin(), str_end = src.end();
+    for (; idx_e < str_end; ++idx_e) {
+        if (*idx_e == split && idx_e != idx_s && split_count-- != 0) {
+            tar.emplace_back(idx_s, idx_e);
+            idx_s = idx_e + 1;
+        }
+    }
+    if (idx_e != idx_s) {
+        tar.emplace_back(idx_s, idx_e);
+    }
+    return tar;
+}
+
+std::string get_short_file_name(const char* ori_file_name, int count=3) {
+  std::string s_file_name = ori_file_name;
+  std::vector<std::string> vectors = StringSplit(s_file_name, '/');
+
+  if (vectors.size() > 3) {
+    return vectors[vectors.size()-3] + "/" + vectors[vectors.size()-2] + "/" + vectors[vectors.size()-1];
+  }
+  return s_file_name;
+}
+
+
 
 LogEvent::LogEvent(LogLevel level, const char* file_name, int line, const char* func_name, LogType type)
   : m_level(level),
-    m_file_name(file_name),
     m_line(line),
     m_func_name(func_name),
     m_type(type) {
+
+    m_file_name= get_short_file_name(file_name).c_str();
+    // m_file_name = file_name;
+
+    // printf("ori_file_name: %s, short_file_name: %s \n", file_name, m_file_name.c_str());
 }
 
 LogEvent::~LogEvent() {
@@ -125,7 +158,6 @@ std::string LogTypeToString(LogType logtype) {
   }
 }
 
-
 std::stringstream& LogEvent::getStringStream() {
 
   // time_t now_time = m_timestamp;
@@ -139,10 +171,10 @@ std::stringstream& LogEvent::getStringStream() {
   char buf[128];
   strftime(buf, sizeof(buf), format, &time);
 
-  m_ss << "[" << buf << "." << m_timeval.tv_usec << "]\t"; 
+  m_ss << "[" << buf << "." << m_timeval.tv_usec << "] "; 
 
   std::string s_level = levelToString(m_level);
-  m_ss << "[" << s_level << "]\t";
+  m_ss << "[" << s_level << "] ";
 
   if (g_pid == 0) {
     g_pid = getpid();
@@ -156,10 +188,16 @@ std::stringstream& LogEvent::getStringStream() {
 
   m_cor_id = Coroutine::GetCurrentCoroutine()->getCorId();
   
-  m_ss << "[" << m_pid << "]\t" 
-		<< "[" << m_tid << "]\t"
-		<< "[" << m_cor_id << "]\t"
-    << "[" << m_file_name << ":" << m_line << "]\t";
+  // m_ss << "[" << m_pid << "] " 
+	// 	<< "[" << m_tid << "] "
+	// 	<< "[" << m_cor_id << "] "
+  //   << "[" << m_file_name << ":" << m_line << "] ";
+
+  m_ss << "[" << m_tid << "] "
+		<< "[" << m_cor_id << "] "
+    << "[" << m_file_name << ":" 
+    << m_func_name << ":" << m_line << "]:";
+
     // << "[" << m_func_name << "]\t";
   RunTime* runtime = getCurrentRunTime();
   if (runtime) {

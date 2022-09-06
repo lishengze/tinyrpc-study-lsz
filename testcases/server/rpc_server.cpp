@@ -122,7 +122,7 @@ class QueryServiceImpl : public QueryService {
 };
 
 void TestRpcServer() {
-    const char * config_file = "rpc_config.xml";
+    const char * config_file = "../rpc_config.xml";
 
     tinyrpc::InitConfig(config_file);
 

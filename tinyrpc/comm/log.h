@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 #include <queue>
+#include <string>
 #include "tinyrpc/net/mutex.h"
 #include "tinyrpc/comm/config.h"
 
@@ -86,7 +87,10 @@ class LogEvent {
 	pid_t m_tid {0};
 	int m_cor_id {0};
 
-	const char* m_file_name;
+	// const char* m_file_name;
+
+	std::string m_file_name;
+
 	int m_line {0};
 	const char* m_func_name;
 	LogType m_type;

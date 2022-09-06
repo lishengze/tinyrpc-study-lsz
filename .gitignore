@@ -3,6 +3,7 @@
 build/*
 bin/*
 lib/*
+.vscode/*
 
 testcases/server/build/*
 testcases/client/build/*
