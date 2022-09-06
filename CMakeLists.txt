@@ -7,7 +7,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 PROJECT(test_cmake)
 
-SET(BIN_NAME test_tinyrpc)
+# SET(BIN_NAME test_tinyrpc)
+
 SET(LIB_NAME tinyrpc)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Generate compile_commands.json
 
@@ -42,10 +43,10 @@ target_link_libraries(${LIB_NAME} protobuf mysqlclient dl)
 #             ${TCP_SRC} ${TINYPB_SRC} ${XML_SRC} ${TEST_SRC}
 #             tinyrpc/coroutine/coctx_swap.S)
 
-SET(BIN_SRC ${TEST_SRC})
+# SET(BIN_SRC ${TEST_SRC})
+# ADD_EXECUTABLE(${BIN_NAME} ${BIN_SRC})
+# target_link_libraries(${BIN_NAME} ${LIB_NAME})
 
-ADD_EXECUTABLE(${BIN_NAME} ${BIN_SRC})
-target_link_libraries(${BIN_NAME} ${LIB_NAME})
 # target_link_libraries(${BIN_NAME} protobuf mysqlclient dl)
 
 

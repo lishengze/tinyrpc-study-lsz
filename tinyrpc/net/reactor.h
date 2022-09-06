@@ -42,6 +42,14 @@ class Reactor {
   
   void loop();
 
+  bool process_wakeup_event();
+
+  bool process_outer_event(epoll_event& one_event);
+
+  bool is_unknown_event(const epoll_event& one_event);
+
+  void process_pending_fds();
+
   void stop();
 
   Timer* getTimer();

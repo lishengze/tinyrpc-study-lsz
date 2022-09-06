@@ -32,27 +32,26 @@ Reactor::Reactor() {
 		Exit(0);
 	}
 
-  m_tid = gettid();
+	m_tid = gettid();
 
-  DebugLog << "thread[" << m_tid << "] succ create a reactor object";
-  t_reactor_ptr = this;
+	DebugLog << "thread[" << m_tid << "] succ create a reactor object";
+	t_reactor_ptr = this;
 
-  if((m_epfd = epoll_create(1)) <= 0 ) {
-		ErrorLog << "start server error. epoll_create error, sys error=" << strerror(errno);
-		Exit(0);
+	if((m_epfd = epoll_create(1)) <= 0 ) {
+			ErrorLog << "start server error. epoll_create error, sys error=" << strerror(errno);
+			Exit(0);
 	} else {
-		DebugLog << "m_epfd = " << m_epfd;
+			DebugLog << "m_epfd = " << m_epfd;
 	}
-  // assert(m_epfd > 0);
+	// assert(m_epfd > 0);
 
 	if((m_wake_fd = eventfd(0, EFD_NONBLOCK)) <= 0 ) {
 		ErrorLog << "start server error. event_fd error, sys error=" << strerror(errno);
 		Exit(0);
 	}
 	DebugLog << "wakefd = " << m_wake_fd;
-  // assert(m_wake_fd > 0);	
+	// assert(m_wake_fd > 0);	
 	addWakeupFd();
-
 }
 
 Reactor::~Reactor() {
@@ -202,16 +201,103 @@ void Reactor::delEventInLoopThread(int fd) {
 	
 }
 
+bool Reactor::process_wakeup_event() {
+	// wakeup
+	// DebugLog << "epoll wakeup, fd=[" << m_wake_fd << "]";
+
+	char buf[8];
+	while(1) {
+		if((g_sys_read_fun(m_wake_fd, buf, 8) == -1) && errno == EAGAIN) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool Reactor::is_unknown_event(const epoll_event& one_event) {
+	return !(one_event.events & EPOLLIN) && !(one_event.events & EPOLLOUT);
+}
+
+bool Reactor::process_outer_event(epoll_event& one_event) {
+	tinyrpc::FdEvent* ptr = (tinyrpc::FdEvent*)one_event.data.ptr;
+	if (ptr != nullptr) {
+		int fd;
+		std::function<void()> read_cb;
+		std::function<void()> write_cb;
+
+		{
+			Mutex::Lock lock(ptr->m_mutex);
+			fd = ptr->getFd();
+			read_cb = ptr->getCallBack(READ);
+			write_cb = ptr->getCallBack(WRITE);
+		}
+
+		if (is_unknown_event(one_event)){
+			ErrorLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
+			delEventInLoopThread(fd);
+		} else {
+			// if timer event, direct excute
+			if (fd == m_timer_fd) {
+				read_cb();
+				return false;
+			}
+			if (one_event.events & EPOLLIN) {
+				// DebugLog << "socket [" << fd << "] occur read event";
+				Mutex::Lock lock(m_mutex);
+				m_pending_tasks.push_back(read_cb);						
+			}
+			if (one_event.events & EPOLLOUT) {
+				// DebugLog << "socket [" << fd << "] occur write event";
+				Mutex::Lock lock(m_mutex);
+				m_pending_tasks.push_back(write_cb);						
+			}
+		}
+	}
+
+	// DebugLog << "task";
+	// excute tasks
+	// for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
+	// 	// DebugLog << "begin to excute task[" << i << "]";
+	// 	m_pending_tasks[i]();
+	//   // DebugLog << "end excute tasks[" << i << "]";
+	// }
+	// m_pending_tasks.clear();
+
+	return true;
+}
+
+void Reactor::process_pending_fds() {
+	std::map<int, epoll_event> tmp_add;
+	std::vector<int> tmp_del;
+
+	{
+		Mutex::Lock lock(m_mutex);
+		tmp_add.swap(m_pending_add_fds);
+		m_pending_add_fds.clear();
+
+		tmp_del.swap(m_pending_del_fds);
+		m_pending_del_fds.clear();
+
+	}
+
+	for (auto i = tmp_add.begin(); i != tmp_add.end(); ++i) {
+		// DebugLog << "fd[" << (*i).first <<"] need to add";
+		addEventInLoopThread((*i).first, (*i).second);	
+	}
+	for (auto i = tmp_del.begin(); i != tmp_del.end(); ++i) {
+		// DebugLog << "fd[" << (*i) <<"] need to del";
+		delEventInLoopThread((*i));	
+	}
+}
 
 void Reactor::loop() {
-
-  assert(isLoopThread());
-  if (m_is_looping) {
-    // DebugLog << "this reactor is looping!";
-    return;
-  }
+	assert(isLoopThread());
+	if (m_is_looping) {
+		// DebugLog << "this reactor is looping!";
+		return;
+	}
   
-  m_is_looping = true;
+    m_is_looping = true;
 	m_stop_flag = false;
 
 	while(!m_stop_flag) {
@@ -238,88 +324,17 @@ void Reactor::loop() {
 				epoll_event one_event = re_events[i];	
 
 				if (one_event.data.fd == m_wake_fd && (one_event.events & READ)) {
-					// wakeup
-					// DebugLog << "epoll wakeup, fd=[" << m_wake_fd << "]";
-					char buf[8];
-					while(1) {
-						if((g_sys_read_fun(m_wake_fd, buf, 8) == -1) && errno == EAGAIN) {
-							break;
-						}
-					}
-
+					if (!process_wakeup_event()) break;
 				} else {
-					tinyrpc::FdEvent* ptr = (tinyrpc::FdEvent*)one_event.data.ptr;
-          if (ptr != nullptr) {
-            int fd;
-            std::function<void()> read_cb;
-            std::function<void()> write_cb;
-
-            {
-              Mutex::Lock lock(ptr->m_mutex);
-              fd = ptr->getFd();
-              read_cb = ptr->getCallBack(READ);
-              write_cb = ptr->getCallBack(WRITE);
-            }
-
-            if ((!(one_event.events & EPOLLIN)) && (!(one_event.events & EPOLLOUT))){
-              ErrorLog << "socket [" << fd << "] occur other unknow event:[" << one_event.events << "], need unregister this socket";
-              delEventInLoopThread(fd);
-            } else {
-							// if timer event, direct excute
-							if (fd == m_timer_fd) {
-								read_cb();
-								continue;
-							}
-              if (one_event.events & EPOLLIN) {
-                // DebugLog << "socket [" << fd << "] occur read event";
-                Mutex::Lock lock(m_mutex);
-                m_pending_tasks.push_back(read_cb);						
-              }
-              if (one_event.events & EPOLLOUT) {
-                // DebugLog << "socket [" << fd << "] occur write event";
-                Mutex::Lock lock(m_mutex);
-                m_pending_tasks.push_back(write_cb);						
-              }
-            }
-          }
-
+					if (!process_outer_event(one_event)) continue;
 				}
-				
 			}
-			
-			// DebugLog << "task";
-			// excute tasks
-			// for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
-			// 	// DebugLog << "begin to excute task[" << i << "]";
-			// 	m_pending_tasks[i]();
-			//   // DebugLog << "end excute tasks[" << i << "]";
-			// }
-      // m_pending_tasks.clear();
-
-			std::map<int, epoll_event> tmp_add;
-			std::vector<int> tmp_del;
-
-			{
-        Mutex::Lock lock(m_mutex);
-				tmp_add.swap(m_pending_add_fds);
-				m_pending_add_fds.clear();
-
-				tmp_del.swap(m_pending_del_fds);
-				m_pending_del_fds.clear();
-
-			}
-			for (auto i = tmp_add.begin(); i != tmp_add.end(); ++i) {
-				// DebugLog << "fd[" << (*i).first <<"] need to add";
-				addEventInLoopThread((*i).first, (*i).second);	
-			}
-			for (auto i = tmp_del.begin(); i != tmp_del.end(); ++i) {
-				// DebugLog << "fd[" << (*i) <<"] need to del";
-				delEventInLoopThread((*i));	
-			}
+	
+			process_pending_fds();
 		}
 	}
-  DebugLog << "reactor loop end";
-  m_is_looping = false;
+	DebugLog << "reactor loop end";
+	m_is_looping = false;
 }
 
 void Reactor::stop() {

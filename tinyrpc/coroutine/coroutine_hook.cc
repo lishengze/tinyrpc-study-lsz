@@ -76,18 +76,18 @@ void toEpoll(tinyrpc::FdEvent::ptr fd_event, int events) {
 
 ssize_t read_hook(int fd, void *buf, size_t count) {
 	DebugLog << "this is hook read";
-  if (tinyrpc::Coroutine::IsMainCoroutine()) {
-    DebugLog << "hook disable, call sys read func";
-    return g_sys_read_fun(fd, buf, count);
-  }
+	if (tinyrpc::Coroutine::IsMainCoroutine()) {
+		DebugLog << "hook disable, call sys read func";
+		return g_sys_read_fun(fd, buf, count);
+	}
 
 	tinyrpc::Reactor::GetReactor();
 	// assert(reactor != nullptr);
 
-  tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(fd);
-  if(fd_event->getReactor() == nullptr) {
-    fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
-  }
+	tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(fd);
+	if(fd_event->getReactor() == nullptr) {
+		fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
+	}
 
 	// if (fd_event->isNonBlock()) {
 		// DebugLog << "user set nonblock, call sys func";
@@ -100,10 +100,10 @@ ssize_t read_hook(int fd, void *buf, size_t count) {
 	// because reactor should always care read event when a connection sockfd was created
 	// so if first call sys read, and read return success, this fucntion will not register read event and return
 	// for this connection sockfd, reactor will never care read event
-  ssize_t n = g_sys_read_fun(fd, buf, count);
-  if (n > 0) {
-    return n;
-  } 
+	ssize_t n = g_sys_read_fun(fd, buf, count);
+	if (n > 0) {
+		return n;
+	} 
 
 	toEpoll(fd_event, tinyrpc::IOEvent::READ);
 
@@ -159,40 +159,40 @@ int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 
 ssize_t write_hook(int fd, const void *buf, size_t count) {
 	DebugLog << "this is hook write";
-  if (tinyrpc::Coroutine::IsMainCoroutine()) {
-    DebugLog << "hook disable, call sys write func";
-    return g_sys_write_fun(fd, buf, count);
-  }
-	tinyrpc::Reactor::GetReactor();
-	// assert(reactor != nullptr);
+	if (tinyrpc::Coroutine::IsMainCoroutine()) {
+		DebugLog << "hook disable, call sys write func";
+		return g_sys_write_fun(fd, buf, count);
+	}
+		tinyrpc::Reactor::GetReactor();
+		// assert(reactor != nullptr);
 
-  tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(fd);
-  if(fd_event->getReactor() == nullptr) {
-    fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
-  }
+	tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(fd);
+	if(fd_event->getReactor() == nullptr) {
+		fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
+	}
 
-	// if (fd_event->isNonBlock()) {
-		// DebugLog << "user set nonblock, call sys func";
-		// return g_sys_write_fun(fd, buf, count);
-	// }
+		// if (fd_event->isNonBlock()) {
+			// DebugLog << "user set nonblock, call sys func";
+			// return g_sys_write_fun(fd, buf, count);
+		// }
 
-	fd_event->setNonBlock();
+		fd_event->setNonBlock();
 
-  ssize_t n = g_sys_write_fun(fd, buf, count);
-  if (n > 0) {
-    return n;
-  }
+	ssize_t n = g_sys_write_fun(fd, buf, count);
+	if (n > 0) {
+		return n;
+	}
 
-	toEpoll(fd_event, tinyrpc::IOEvent::WRITE);
+		toEpoll(fd_event, tinyrpc::IOEvent::WRITE);
 
-	DebugLog << "write func to yield";
-	tinyrpc::Coroutine::Yield();
+		DebugLog << "write func to yield";
+		tinyrpc::Coroutine::Yield();
 
-	fd_event->delListenEvents(tinyrpc::IOEvent::WRITE);
-	// fd_event->updateToReactor();
+		fd_event->delListenEvents(tinyrpc::IOEvent::WRITE);
+		// fd_event->updateToReactor();
 
-	DebugLog << "write func yield back, now to call sys write";
-	return g_sys_write_fun(fd, buf, count);
+		DebugLog << "write func yield back, now to call sys write";
+		return g_sys_write_fun(fd, buf, count);
 
 }
 
