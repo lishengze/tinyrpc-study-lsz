@@ -118,31 +118,28 @@ ssize_t read_hook(int fd, void *buf, size_t count) {
 
 }
 
+// accpted the client id, add it into reactor epoll, return it to the main;
 int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
-	DebugLog << "this is hook accept";
-  if (tinyrpc::Coroutine::IsMainCoroutine()) {
-    DebugLog << "hook disable, call sys accept func";
-    return g_sys_accept_fun(sockfd, addr, addrlen);
-  }
+	DebugLog << "[hook] accept";
+	if (tinyrpc::Coroutine::IsMainCoroutine()) {
+		DebugLog << "hook disable, call sys accept func";
+		return g_sys_accept_fun(sockfd, addr, addrlen);
+	}
+	
 	tinyrpc::Reactor::GetReactor();
-	// assert(reactor != nullptr);
 
-  tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(sockfd);
-  if(fd_event->getReactor() == nullptr) {
-    fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
-  }
-
-	// if (fd_event->isNonBlock()) {
-		// DebugLog << "user set nonblock, call sys func";
-		// return g_sys_accept_fun(sockfd, addr, addrlen);
-	// }
+	tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(sockfd);
+	if(fd_event->getReactor() == nullptr) {
+		fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
+	}
 
 	fd_event->setNonBlock();
 
-  int n = g_sys_accept_fun(sockfd, addr, addrlen);
-  if (n > 0) {
-    return n;
-  } 
+	// why?
+	int n = g_sys_accept_fun(sockfd, addr, addrlen);
+	if (n > 0) {
+		return n;
+	} 
 
 	toEpoll(fd_event, tinyrpc::IOEvent::READ);
 	
@@ -158,7 +155,7 @@ int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 }
 
 ssize_t write_hook(int fd, const void *buf, size_t count) {
-	DebugLog << "this is hook write";
+	DebugLog << "[hook] write";
 	if (tinyrpc::Coroutine::IsMainCoroutine()) {
 		DebugLog << "hook disable, call sys write func";
 		return g_sys_write_fun(fd, buf, count);
@@ -197,7 +194,7 @@ ssize_t write_hook(int fd, const void *buf, size_t count) {
 }
 
 int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
-	DebugLog << "this is hook connect";
+	DebugLog << "[hook] connect";
   if (tinyrpc::Coroutine::IsMainCoroutine()) {
     DebugLog << "hook disable, call sys connect func";
     return g_sys_connect_fun(sockfd, addr, addrlen);
@@ -271,7 +268,7 @@ int connect_hook(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
 unsigned int sleep_hook(unsigned int seconds) {
 
-	DebugLog << "this is hook sleep";
+	DebugLog << "[hook] sleep";
   if (tinyrpc::Coroutine::IsMainCoroutine()) {
     DebugLog << "hook disable, call sys sleep func";
     return g_sys_sleep_fun(seconds);
@@ -310,6 +307,8 @@ extern "C" {
 
 
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
+	DebugLog << "[sys] accept";
+
 	if (!tinyrpc::g_hook || !tinyrpc::Coroutine::GetCoroutineSwapFlag()) {
 		return g_sys_accept_fun(sockfd, addr, addrlen);
 	} else {
@@ -318,6 +317,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 }
 
 ssize_t read(int fd, void *buf, size_t count) {
+	DebugLog << "[sys] read";
 	if (!tinyrpc::g_hook || !tinyrpc::Coroutine::GetCoroutineSwapFlag()) {
 		return g_sys_read_fun(fd, buf, count);
 	} else {
@@ -326,6 +326,7 @@ ssize_t read(int fd, void *buf, size_t count) {
 }
 
 ssize_t write(int fd, const void *buf, size_t count) {
+	DebugLog << "[sys] write";
 	if (!tinyrpc::g_hook || !tinyrpc::Coroutine::GetCoroutineSwapFlag()) {
 		return g_sys_write_fun(fd, buf, count);
 	} else {
@@ -334,6 +335,7 @@ ssize_t write(int fd, const void *buf, size_t count) {
 }
 
 int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+	DebugLog << "[sys] connect";
 	if (!tinyrpc::g_hook || !tinyrpc::Coroutine::GetCoroutineSwapFlag()) {
 		return g_sys_connect_fun(sockfd, addr, addrlen);
 	} else {
@@ -342,6 +344,7 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 }
 
 unsigned int sleep(unsigned int seconds) {
+	DebugLog << "[sys] sleep";
 	if (!tinyrpc::g_hook || !tinyrpc::Coroutine::GetCoroutineSwapFlag()) {
 		return g_sys_sleep_fun(seconds);
 	} else {

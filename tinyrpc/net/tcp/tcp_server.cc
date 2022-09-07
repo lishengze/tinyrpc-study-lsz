@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <string.h>
+#include <string>
 #include "tinyrpc/net/tcp/tcp_server.h"
 #include "tinyrpc/net/tcp/tcp_connection.h"
 #include "tinyrpc/net/tcp/io_thread.h"
@@ -25,6 +26,7 @@ TcpAcceptor::TcpAcceptor(NetAddress::ptr net_addr) : m_local_addr(net_addr) {
 }
 
 void TcpAcceptor::init() {
+	InfoLog << "-------- Listen Port Start";
 	m_fd = socket(m_local_addr->getFamily(), SOCK_STREAM, 0);
 	if (m_fd < 0) {
 		ErrorLog << "start server error. socket error, sys error=" << strerror(errno);
@@ -110,9 +112,20 @@ int TcpAcceptor::toAccept() {
 	return rt;	
 }
 
+std::string get_prototype(const tinyrpc::ProtocalType& type) {
+	if (type == Http_Protocal) {
+		return "Http";
+	} else {
+		return "TinyPb";
+	}	
+}
+
 
 TcpServer::TcpServer(NetAddress::ptr addr, ProtocalType type /*= TinyPb_Protocal*/) : m_addr(addr) {
-  m_io_pool = std::make_shared<IOThreadPool>(gRpcConfig->m_iothread_num);
+	DebugLog << "-------- Construct TcpServer ----------- ";
+	DebugLog << "prototype: "<< get_prototype(type) << ", io_thread_num: " << gRpcConfig->m_iothread_num << ", address: " << m_addr->toString();
+
+  	m_io_pool = std::make_shared<IOThreadPool>(gRpcConfig->m_iothread_num);
 	if (type == Http_Protocal) {
 		m_dispatcher = std::make_shared<HttpDispacther>();
 		m_codec = std::make_shared<HttpCodeC>();
@@ -123,10 +136,12 @@ TcpServer::TcpServer(NetAddress::ptr addr, ProtocalType type /*= TinyPb_Protocal
 		m_protocal_type = TinyPb_Protocal;
 	}
 	m_main_reactor = tinyrpc::Reactor::GetReactor();
-	InfoLog << "TcpServer setup on [" << m_addr->toString() << "]";
+	// InfoLog << "TcpServer setup on [" << m_addr->toString() << "]";
 }
 
 void TcpServer::start() {
+
+	DebugLog << "-------- TcpServer Start -----------";
 
 	m_acceptor.reset(new TcpAcceptor(m_addr));
 	// m_accept_cor = std::make_shared<tinyrpc::Coroutine>(128 * 1024, std::bind(&TcpServer::MainAcceptCorFunc, this)); 
@@ -149,7 +164,7 @@ NetAddress::ptr TcpServer::getPeerAddr() {
 }
 
 void TcpServer::MainAcceptCorFunc() {
-  DebugLog << "enable Hook here";
+  DebugLog << "MainAcceptCorFunc enable Hook here";
 
   m_acceptor->init();
   while (!m_is_stop_accept) {

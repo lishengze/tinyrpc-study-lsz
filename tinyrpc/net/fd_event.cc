@@ -116,24 +116,24 @@ void FdEvent::setReactor(Reactor* r) {
 }
 
 void FdEvent::setNonBlock() {
-  if (m_fd == -1) {
-    ErrorLog << "error, fd=-1";
-    return;
-  }
+    if (m_fd == -1) {
+      ErrorLog << "error, fd=-1";
+      return;
+    }
 
-  int flag = fcntl(m_fd, F_GETFL, 0); 
-  if (flag & O_NONBLOCK) {
-    DebugLog << "fd already set o_nonblock";
-    return;
-  }
+    int flag = fcntl(m_fd, F_GETFL, 0); 
+    if (flag & O_NONBLOCK) {
+      DebugLog << "fd already set o_nonblock";
+      return;
+    }
 
-  fcntl(m_fd, F_SETFL, flag | O_NONBLOCK);
-  flag = fcntl(m_fd, F_GETFL, 0); 
-  if (flag & O_NONBLOCK) {
-    DebugLog << "succ set o_nonblock";
-  } else {
-    ErrorLog << "set o_nonblock error";
-  }
+    fcntl(m_fd, F_SETFL, flag | O_NONBLOCK);
+    flag = fcntl(m_fd, F_GETFL, 0); 
+    if (flag & O_NONBLOCK) {
+      DebugLog << "succ set o_nonblock";
+    } else {
+      ErrorLog << "set o_nonblock error";
+    }
 
 }
 

@@ -24,6 +24,7 @@ static thread_local int t_max_epoll_timeout = 10000;     // ms
 
 
 Reactor::Reactor() {
+	DebugLog << "********* Construct Reactor *********";
   
   // one thread can't create more than one reactor object!!
   // assert(t_reactor_ptr == nullptr);
@@ -38,10 +39,10 @@ Reactor::Reactor() {
 	t_reactor_ptr = this;
 
 	if((m_epfd = epoll_create(1)) <= 0 ) {
-			ErrorLog << "start server error. epoll_create error, sys error=" << strerror(errno);
-			Exit(0);
+		ErrorLog << "start server error. epoll_create error, sys error=" << strerror(errno);
+		Exit(0);
 	} else {
-			DebugLog << "m_epfd = " << m_epfd;
+		DebugLog << "Init m_epfd = " << m_epfd;
 	}
 	// assert(m_epfd > 0);
 
@@ -291,6 +292,7 @@ void Reactor::process_pending_fds() {
 }
 
 void Reactor::loop() {
+	DebugLog << "-------- loop Start! --------\n"; 
 	assert(isLoopThread());
 	if (m_is_looping) {
 		// DebugLog << "this reactor is looping!";

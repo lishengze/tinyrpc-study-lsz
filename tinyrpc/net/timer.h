@@ -8,12 +8,27 @@
 #include "mutex.h"
 #include "reactor.h"
 #include "fd_event.h"
+#include <sys/time.h>
+#include <sstream>
+#include <iomanip>
+#include <string>
 #include "../comm/log.h"
 
 
 namespace tinyrpc {
 
 int64_t getNowMs();
+
+inline std::string ToSecondStr(long nano, const char* format="%Y-%m-%d %H:%M:%S") {
+    if (nano <= 0)
+        return std::string("NULL");
+    nano /= 1000;
+    struct tm* dt = {0};
+    char buffer[30];
+    dt = gmtime(&nano);
+    strftime(buffer, sizeof(buffer), format, dt);
+    return std::string(buffer);
+}
 
 
 class TimerEvent {
@@ -24,7 +39,7 @@ class TimerEvent {
   TimerEvent(int64_t interval, bool is_repeated, std::function<void()>task)
     : m_interval(interval), m_is_repeated(is_repeated), m_task(task) {
     m_arrive_time = getNowMs() + m_interval;  	
-    DebugLog << "timeevent will occur at " << m_arrive_time;
+    DebugLog << "timeevent will occur at " << ToSecondStr(m_arrive_time);
   }
 
   void resetTime() {

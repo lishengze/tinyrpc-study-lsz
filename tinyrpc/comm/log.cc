@@ -195,8 +195,8 @@ std::stringstream& LogEvent::getStringStream() {
 
   m_ss << "[" << m_tid << "] "
 		<< "[" << m_cor_id << "] "
-    << "[" << m_file_name << ":" 
-    << m_func_name << ":" << m_line << "]:";
+    << "[" << m_file_name << "." 
+    << m_func_name << "." << m_line << "]:";
 
     // << "[" << m_func_name << "]\t";
   RunTime* runtime = getCurrentRunTime();

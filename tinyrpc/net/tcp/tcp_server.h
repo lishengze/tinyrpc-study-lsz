@@ -27,6 +27,7 @@ class TcpAcceptor {
 
   void init();
 
+  // Return the accepted client fd;
   int toAccept();
 
   ~TcpAcceptor();
