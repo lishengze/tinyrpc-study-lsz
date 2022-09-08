@@ -15,6 +15,8 @@ tinyrpc::TcpServer::ptr gRpcServer;
 static int g_init_config = 0;
 
 void InitConfig(const char* file) {
+  printf("InitConfig: %s\n",file);
+
   tinyrpc::SetHook(false);
 
   #ifdef DECLARE_MYSQL_PULGIN
@@ -29,10 +31,12 @@ void InitConfig(const char* file) {
   tinyrpc::SetHook(true);
 
   if (g_init_config == 0) {
-    gRpcConfig = std::make_shared<tinyrpc::Config>(file);
-    gRpcConfig->readConf();
-    g_init_config = 1;
+      gRpcConfig = std::make_shared<tinyrpc::Config>(file);
+      gRpcConfig->readConf();
+      g_init_config = 1;
   }
+
+  DebugLog << "InitConfig Over!\n";
 }
 
 // void RegisterService(google::protobuf::Service* service) {

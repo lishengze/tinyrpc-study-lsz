@@ -136,6 +136,7 @@ TcpServer::TcpServer(NetAddress::ptr addr, ProtocalType type /*= TinyPb_Protocal
 		m_protocal_type = TinyPb_Protocal;
 	}
 	m_main_reactor = tinyrpc::Reactor::GetReactor();
+	DebugLog << "-------- Construct TcpServer Over! -----------\n";
 	// InfoLog << "TcpServer setup on [" << m_addr->toString() << "]";
 }
 

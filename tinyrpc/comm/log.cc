@@ -26,6 +26,21 @@
 #include "tinyrpc/net/timer.h"
 
 
+std::string get_time_string() {
+  timeval cur_time;
+  gettimeofday(&cur_time, nullptr);
+
+  struct tm time; 
+  localtime_r(&(cur_time.tv_sec), &time);
+
+  const char* format = "%Y-%m-%d %H:%M:%S";
+  char buf[128];
+  strftime(buf, sizeof(buf), format, &time);
+
+  std::string rst = std::string(buf) + "." + std::to_string(cur_time.tv_usec);
+
+  return rst;
+}
 
 
 namespace tinyrpc {
@@ -253,8 +268,11 @@ Logger::~Logger() {
 
 void Logger::init(const char* file_name, const char* file_path, int max_size, int sync_inteval) {
   if (!m_is_init) {
+    printf("%s Logger::init \n", get_time_string().c_str());
     TimerEvent::ptr event = std::make_shared<TimerEvent>(sync_inteval, true, std::bind(&Logger::loopFunc, this));
     Reactor::GetReactor()->getTimer()->addTimerEvent(event);
+    DebugLog << "Add Logger TimerEvent Over!\n";
+
     m_async_rpc_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, RPC_LOG);
     m_async_app_logger = std::make_shared<AsyncLogger>(file_name, file_path, max_size, APP_LOG);
 

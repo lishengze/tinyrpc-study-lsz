@@ -14,6 +14,7 @@ extern tinyrpc::Logger::ptr gRpcLogger;
 extern tinyrpc::TcpServer::ptr gRpcServer;
 
 Config::Config(const char* file_path) : m_file_path(std::string(file_path)) {
+  
   m_xml_file = new TiXmlDocument();
   bool rt = m_xml_file->LoadFile(file_path);
   if (!rt) {

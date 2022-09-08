@@ -50,7 +50,7 @@ Reactor::Reactor() {
 		ErrorLog << "start server error. event_fd error, sys error=" << strerror(errno);
 		Exit(0);
 	}
-	DebugLog << "wakefd = " << m_wake_fd;
+	DebugLog << "Init wakefd = " << m_wake_fd;
 	// assert(m_wake_fd > 0);	
 	addWakeupFd();
 }
@@ -68,7 +68,7 @@ Reactor::~Reactor() {
 Reactor* Reactor::GetReactor() {
   if (t_reactor_ptr == nullptr) {
 		DebugLog << "Create new Reactor";
-    t_reactor_ptr = new Reactor();
+    	t_reactor_ptr = new Reactor();
   }
 	// DebugLog << "t_reactor_ptr = " << t_reactor_ptr;
   return t_reactor_ptr; 
