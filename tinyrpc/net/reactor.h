@@ -7,9 +7,13 @@
 #include <atomic>
 #include <map>
 #include <functional>
+#include <string>
 #include "../coroutine/coroutine.h"
 #include "fd_event.h"
 #include "mutex.h"
+
+
+using  std::string;
 
 namespace tinyrpc {
 
@@ -24,7 +28,7 @@ class Reactor {
 
   typedef std::shared_ptr<Reactor> ptr;
 
-  explicit Reactor();
+  explicit Reactor(const string name="");
 
   ~Reactor();
 
@@ -71,6 +75,7 @@ class Reactor {
   void delEventInLoopThread(int fd);
   
  private:
+  std::string m_name;
   int m_epfd {-1};
   int m_wake_fd {-1};         // wakeup fd
   int m_timer_fd {-1};        // timer fd

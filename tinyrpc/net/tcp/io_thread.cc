@@ -55,6 +55,8 @@ TcpTimeWheel::ptr IOThread::getTimeWheel() {
 void* IOThread::main(void* arg) {
   // assert(t_reactor_ptr == nullptr);
 
+  DebugLog << "Create IO Thread Start!";
+
   t_reactor_ptr = new Reactor();
   IOThread* thread = static_cast<IOThread*>(arg);
   t_cur_io_thread = thread;
@@ -70,6 +72,8 @@ void* IOThread::main(void* arg) {
   Coroutine::GetCurrentCoroutine();
 
   t_reactor_ptr->loop();
+
+  DebugLog << "Create IO Thread End!\n";
 
   return nullptr;
 }
@@ -121,6 +125,7 @@ void IOThread::MainLoopTimerFunc() {
 
 IOThreadPool::IOThreadPool(int size) : m_size(size) {
   m_io_threads.resize(size);
+  DebugLog << "Create IO Thread: " << size;
   for (int i = 0; i < size; ++i) {
     m_io_threads[i] = std::make_shared<IOThread>();
   }

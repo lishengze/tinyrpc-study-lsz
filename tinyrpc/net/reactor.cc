@@ -23,7 +23,7 @@ static thread_local Reactor* t_reactor_ptr = nullptr;
 static thread_local int t_max_epoll_timeout = 10000;     // ms
 
 
-Reactor::Reactor() {
+Reactor::Reactor(const std::string name): m_name(name){
 	DebugLog << "********* Construct Reactor *********";
   
   // one thread can't create more than one reactor object!!
@@ -68,7 +68,7 @@ Reactor::~Reactor() {
 Reactor* Reactor::GetReactor() {
   if (t_reactor_ptr == nullptr) {
 		DebugLog << "Create new Reactor";
-    	t_reactor_ptr = new Reactor();
+    	t_reactor_ptr = new Reactor("Main");
   }
 	// DebugLog << "t_reactor_ptr = " << t_reactor_ptr;
   return t_reactor_ptr; 
@@ -292,7 +292,7 @@ void Reactor::process_pending_fds() {
 }
 
 void Reactor::loop() {
-	DebugLog << "-------- loop Start! --------\n"; 
+	DebugLog << "-------- loop Start! "<< m_name << " --------\n"; 
 	assert(isLoopThread());
 	if (m_is_looping) {
 		// DebugLog << "this reactor is looping!";

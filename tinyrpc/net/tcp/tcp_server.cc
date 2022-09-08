@@ -151,7 +151,12 @@ void TcpServer::start() {
 	m_accept_cor->setCallBack(std::bind(&TcpServer::MainAcceptCorFunc, this));
 
 	tinyrpc::Coroutine::Resume(m_accept_cor.get());
+
+	DebugLog << "tinyrpc::Coroutine::Resume(m_accept_cor.get()) over!";
+
 	m_main_reactor->loop();
+
+	DebugLog << "-------- TcpServer Start Over! -----------";
 
 }
 

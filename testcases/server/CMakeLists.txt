@@ -12,8 +12,13 @@ SET(BIN_NAME server)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Generate compile_commands.json
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++11 -pthread -Wall -Wno-deprecated -Wno-unused-but-set-variable")
+# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Og -std=c++11 -pthread -Wall -Wno-deprecated -Wno-unused-but-set-variable")
 
+# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0  -g2 -ggdb -std=c++11 -pthread -Wall")
+
+SET(CMAKE_BUILD_TYPE "Debug")
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -std=c++11 -pthread -O0 -Wall -g2 -ggdb ")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -std=c++11 -pthread -O3 -Wall ")
 
 ## Set CPP SRC
 

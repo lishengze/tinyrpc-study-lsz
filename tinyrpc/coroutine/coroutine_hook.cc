@@ -145,6 +145,7 @@ int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	
 	DebugLog << "accept func to yield";
 	tinyrpc::Coroutine::Yield();
+	DebugLog << "accept_hook tinyrpc::Coroutine::Yield() over!";
 
 	fd_event->delListenEvents(tinyrpc::IOEvent::READ);
 	// fd_event->updateToReactor();
