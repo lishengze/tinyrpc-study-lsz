@@ -458,6 +458,7 @@ sudo systemctl stop firewalld.service
 当然，也可以直接使用 curl 工具发送 Http 协议来测试：
 ```
 curl -X GET "http://192.168.245.7:19999/user?id=1100110001"
+curl -X GET "http://127.0.0.1:19998/user?id=1100110001"
 ```
 
 如果测试正常，你将得到以下页面：

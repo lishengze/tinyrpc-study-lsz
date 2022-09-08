@@ -46,7 +46,7 @@ Timer::~Timer() {
 
 
 void Timer::addTimerEvent(TimerEvent::ptr event, bool need_reset /*=true*/) {
-  DebugLog << "addTimerEvent will occur at " << ToSecondStr(event->m_arrive_time);
+  // DebugLog << "addTimerEvent will occur at " << ToSecondStr(event->m_arrive_time);
 
   bool is_reset = false;
   if (m_pending_events.empty()) {

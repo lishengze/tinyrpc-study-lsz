@@ -220,7 +220,7 @@ class AsyncRPCTestServlet: public tinyrpc::HttpServlet {
 
 void TestHttpServer() {
 
-  const char* config_file = "../http_server_config.xml";
+  const char* config_file = "/home/lsz/Code/Git/study/tiny_rpc/testcases/server/http_server_config.xml";
 
 
   tinyrpc::InitConfig(config_file);

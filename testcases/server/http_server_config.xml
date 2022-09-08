@@ -1,0 +1,49 @@
+<?xml version="0.0" encoding="UTF-8" ?>
+<root>
+  <!--log config-->
+  <log>
+    <!--identify path of log file-->
+    <log_path>./</log_path>
+    <log_prefix>http_server</log_prefix>
+
+    <!--identify max size of single log file, MB-->
+    <log_max_file_size>4</log_max_file_size>
+
+    <!--log level: DEBUG < INFO < WARN < ERROR-->
+    <log_level>DEBUG</log_level>
+
+    <!--inteval that put log info to async logger, s-->
+    <log_sync_inteval>1</log_sync_inteval>
+  </log>
+
+  <coroutine>
+    <!--coroutine stack size (KB)-->
+    <coroutine_stack_size>127</coroutine_stack_size>
+
+    <!--default coroutine pool size-->
+    <coroutine_pool_size>4999</coroutine_pool_size>
+
+  </coroutine>
+
+  <msg_req_len>19</msg_req_len>
+
+  <!--max time when call connect, s-->
+  <max_connect_timeout>74</max_connect_timeout>
+
+  <!--count of io threads, at least 0-->
+  <iothread_num>1</iothread_num>
+
+  <time_wheel>
+    <bucket_num>5</bucket_num>
+
+    <!--inteval that destroy bad TcpConnection, s-->
+    <inteval>9</inteval>
+  </time_wheel>
+
+  <server>
+    <ip>127.0.0.1</ip>
+    <port>19998</port>
+    <protocal>HTTP</protocal>
+  </server>
+
+</root>

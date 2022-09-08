@@ -75,6 +75,8 @@ TcpAcceptor::~TcpAcceptor() {
 
 int TcpAcceptor::toAccept() {
 
+	DebugLog << "toAccept Start!";
+
 	socklen_t len = 0;
 	int rt = 0;
 
@@ -88,7 +90,7 @@ int TcpAcceptor::toAccept() {
 			DebugLog << "error, no new client coming, errno=" << errno << "error=" << strerror(errno);
 			return -1;
 		}
-		InfoLog << "New client accepted succ! port:[" << cli_addr.sin_port;
+		
 		m_peer_addr = std::make_shared<IPAddress>(cli_addr);
 	} else if (m_family == AF_UNIX) {
 		sockaddr_un cli_addr;
@@ -109,6 +111,7 @@ int TcpAcceptor::toAccept() {
 	}
 
 	InfoLog << "New client accepted succ! fd:[" << rt <<  ", addr:[" << m_peer_addr->toString() << "]";
+	DebugLog << "toAccept Over!\n";
 	return rt;	
 }
 
@@ -174,6 +177,7 @@ void TcpServer::MainAcceptCorFunc() {
 
   m_acceptor->init();
   while (!m_is_stop_accept) {
+	DebugLog << "----- accept loop start!";
 
     int fd = m_acceptor->toAccept();
     if (fd == -1) {
@@ -187,7 +191,7 @@ void TcpServer::MainAcceptCorFunc() {
     };
     io_thread->getReactor()->addTask(cb);
     m_tcp_counts++;
-    DebugLog << "current tcp connection count is [" << m_tcp_counts << "]";
+    DebugLog << "----- accept loop end , current tcp connection count is [" << m_tcp_counts << "]\n";
   }
 }
 

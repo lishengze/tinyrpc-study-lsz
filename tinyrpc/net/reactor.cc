@@ -204,7 +204,7 @@ void Reactor::delEventInLoopThread(int fd) {
 
 bool Reactor::process_wakeup_event() {
 	// wakeup
-	// DebugLog << "epoll wakeup, fd=[" << m_wake_fd << "]";
+	DebugLog << "epoll wakeup, fd=[" << m_wake_fd << "]";
 
 	char buf[8];
 	while(1) {
@@ -239,16 +239,17 @@ bool Reactor::process_outer_event(epoll_event& one_event) {
 		} else {
 			// if timer event, direct excute
 			if (fd == m_timer_fd) {
+				// DebugLog << "epoll outer timer event fd: " << fd ;
 				read_cb();
 				return false;
 			}
 			if (one_event.events & EPOLLIN) {
-				// DebugLog << "socket [" << fd << "] occur read event";
+				DebugLog << "epoll outer socket [" << fd << "] occur read event";
 				Mutex::Lock lock(m_mutex);
 				m_pending_tasks.push_back(read_cb);						
 			}
 			if (one_event.events & EPOLLOUT) {
-				// DebugLog << "socket [" << fd << "] occur write event";
+				DebugLog << "epoll outer socket [" << fd << "] occur write event";
 				Mutex::Lock lock(m_mutex);
 				m_pending_tasks.push_back(write_cb);						
 			}
@@ -308,15 +309,15 @@ void Reactor::loop() {
 		// DebugLog << "task";
 		// excute tasks
 		for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
-			// DebugLog << "begin to excute task[" << i << "]";
+			DebugLog << "begin to excute task[" << i << "]";
 			m_pending_tasks[i]();
-			// DebugLog << "end excute tasks[" << i << "]";
+			DebugLog << "end excute tasks[" << i << "]\n";
 		}
 		m_pending_tasks.clear();
 		// DebugLog << "to epoll_wait";
 		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, t_max_epoll_timeout);
 
-		// DebugLog << "epoll_wait back";
+		// DebugLog << "epoll_wait back rt: " << rt;
 
 		if (rt < 0) {
 			ErrorLog << "epoll_wait error, skip, errno=" << strerror(errno);
