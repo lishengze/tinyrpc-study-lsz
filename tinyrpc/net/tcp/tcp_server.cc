@@ -61,6 +61,7 @@ void TcpAcceptor::init() {
 		ErrorLog << "start server error. listen error, fd= " << m_fd << ", errno=" << errno << ", error=" << strerror(errno);
 		Exit(0);
 	}
+	InfoLog << "-------- Listen Port Start Over!";
   // assert(rt == 0);
 
 }

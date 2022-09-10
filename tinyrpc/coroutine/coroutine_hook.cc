@@ -118,6 +118,17 @@ ssize_t read_hook(int fd, void *buf, size_t count) {
 
 }
 
+tinyrpc::FdEvent::ptr  GetFdEvent(int sockfd) { 
+	tinyrpc::Reactor::GetReactor();
+	tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(sockfd);
+	if(fd_event->getReactor() == nullptr) {
+		fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
+	}
+
+	fd_event->setNonBlock();	
+	return fd_event;
+}
+
 // accpted the client id, add it into reactor epoll, return it to the main;
 int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	DebugLog << "[hook] accept";
@@ -126,17 +137,11 @@ int accept_hook(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		return g_sys_accept_fun(sockfd, addr, addrlen);
 	}
 	
-	tinyrpc::Reactor::GetReactor();
+	auto fd_event = GetFdEvent(sockfd);
 
-	tinyrpc::FdEvent::ptr fd_event = tinyrpc::FdEventContainer::GetFdContainer()->getFdEvent(sockfd);
-	if(fd_event->getReactor() == nullptr) {
-		fd_event->setReactor(tinyrpc::Reactor::GetReactor());  
-	}
-
-	fd_event->setNonBlock();
-
-	// why?
+	// why? 作用是啥？
 	int n = g_sys_accept_fun(sockfd, addr, addrlen);
+	DebugLog << "g_sys_accept_fun n: " << n;
 	if (n > 0) {
 		return n;
 	} 
