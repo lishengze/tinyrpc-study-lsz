@@ -186,14 +186,22 @@ void TcpServer::MainAcceptCorFunc() {
       Coroutine::Yield();
       continue;
     }
-    IOThread *io_thread = m_io_pool->getIOThread();
-    auto cb = [this, io_thread, fd]() {
-      io_thread->addClient(this, fd);
-    };
-    io_thread->getReactor()->addTask(cb);
+	
+	StoreNewClientFD(fd);
+
     m_tcp_counts++;
     DebugLog << "----- accept loop end , current tcp connection count is [" << m_tcp_counts << "]\n";
   }
+}
+
+void TcpServer::StoreNewClientFD(const int& fd) {
+	DebugLog << "StoreNewClientFD: " << fd;
+    IOThread *io_thread = m_io_pool->getIOThread();
+    auto cb = [this, io_thread, fd]() {
+	  DebugLog << "[Q] " << io_thread->getPthreadId() << ", add client: " << fd;
+      io_thread->addClient(this, fd);
+    };
+    io_thread->getReactor()->addTask(cb);
 }
 
 AbstractDispatcher::ptr TcpServer::getDispatcher() {	

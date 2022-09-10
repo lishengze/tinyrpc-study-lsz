@@ -292,6 +292,17 @@ void Reactor::process_pending_fds() {
 	}
 }
 
+// DebugLog << "task";
+// excute tasks
+void Reactor::process_pending_task() {
+	for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
+		DebugLog << "begin to excute task[" << i << "]";
+		m_pending_tasks[i]();
+		DebugLog << "end excute tasks[" << i << "]\n";
+	}
+	m_pending_tasks.clear();
+}
+
 void Reactor::loop() {
 	DebugLog << "-------- loop Start! "<< m_name << " --------\n"; 
 	assert(isLoopThread());
@@ -306,17 +317,10 @@ void Reactor::loop() {
 	while(!m_stop_flag) {
 		const int MAX_EVENTS = 10;
 		epoll_event re_events[MAX_EVENTS + 1];
-		// DebugLog << "task";
-		// excute tasks
-		for (size_t i = 0; i < m_pending_tasks.size(); ++i) {
-			DebugLog << "begin to excute task[" << i << "]";
-			m_pending_tasks[i]();
-			DebugLog << "end excute tasks[" << i << "]\n";
-		}
-		m_pending_tasks.clear();
-		// DebugLog << "to epoll_wait";
-		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, t_max_epoll_timeout);
 
+		process_pending_task();
+
+		int rt = epoll_wait(m_epfd, re_events, MAX_EVENTS, t_max_epoll_timeout);
 		// DebugLog << "epoll_wait back rt: " << rt;
 
 		if (rt < 0) {
@@ -331,8 +335,7 @@ void Reactor::loop() {
 				} else {
 					if (!process_outer_event(one_event)) continue;
 				}
-			}
-	
+			}	
 			process_pending_fds();
 		}
 	}
@@ -346,7 +349,6 @@ void Reactor::stop() {
     wakeup();
   }
 }
-
 
 void Reactor::addTask(std::function<void()> task, bool is_wakeup /*=true*/) {
 

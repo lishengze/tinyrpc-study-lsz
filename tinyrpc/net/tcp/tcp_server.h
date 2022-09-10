@@ -83,6 +83,8 @@ class TcpServer {
  private:
   void MainAcceptCorFunc();
 
+  void StoreNewClientFD(const int& fd);
+
  private:
   
   NetAddress::ptr m_addr;
